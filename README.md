@@ -15,3 +15,5 @@
 - need to display the next board to play in, based on the last position played (even after refresh)
 - need to see games that are in play and open, to rejoin them (currently need to know game ID)
 - need to specify wallet address and piece (i.e X or O) at the moment don't know if you are X or O
+
+READ FROM HERE: https://github.com/Minimuino/ultimate-tic-tac-toe-react/blob/master/src/App.js

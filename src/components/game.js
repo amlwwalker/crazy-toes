@@ -1,26 +1,11 @@
 import React from "react"
+import { connect } from "react-redux"
 import Board from "./board.js"
-import { makeMove } from "./web3/contract"
 import generateGridNxN from "./utils.js"
 
 class Game extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {
-      squares: Array(this.props.size * this.props.size).fill(
-        // Outer squares
-        Array(this.props.size * this.props.size).fill(null)
-      ), // Inner squares
-      localWinners: Array(this.props.size * this.props.size).fill(null),
-      lastMoveLocation: {
-        row: null,
-        col: null,
-        outerRow: null,
-        outerCol: null
-      },
-      xIsNext: true,
-      winner: null
-    }
 
     this.timeOver = this.timeOver.bind(this)
     this.renderBoard = this.renderBoard.bind(this)
@@ -29,49 +14,54 @@ class Game extends React.Component {
   timeOver(player) {
     // console.log('Time over!!' + player + ' loses');
     if (player === "X") {
-      this.setState({ winner: "O" })
+      this.props.updateGame({ winner: "O" })
     } else {
-      this.setState({ winner: "X" })
+      this.props.updateGame({ winner: "X" })
     }
   }
 
   isCurrentBoard(idx) {
-    if (this.state.winner) return false
-
-    const lastRow = this.state.lastMoveLocation.row
-    const lastCol = this.state.lastMoveLocation.col
+    console.log("checking " + idx)
+    console.log("the last resort " + this.props.game.winner)
+    if (this.props.game.winner) return false
+    console.log("but it never makes it ehre....")
+    const lastRow = this.props.game.lastMoveLocation.row
+    const lastCol = this.props.game.lastMoveLocation.col
     if (lastRow === null || lastCol === null) {
+      console.log("lost")
+      console.log("it is the current board")
       return true
     } else {
-      const currentBoard = lastRow * this.props.size + lastCol
-      if (this.state.localWinners[currentBoard]) {
-        return this.state.localWinners[idx] === null
+      const currentBoard = lastRow * this.props.game.size + lastCol
+      if (this.props.game.localWinners[currentBoard]) {
+        console.log("lost 1")
+        console.log(
+          "local winners = " + this.props.game.localWinners[idx] === null
+        )
+        return this.props.game.localWinners[idx] === null
       } else {
+        console.log("lost 2")
+        console.log(
+          "idx === currentBoard = ",
+          currentBoard,
+          " ",
+          idx === currentBoard
+        )
         return idx === currentBoard
       }
     }
   }
 
-  async makeMove(inner_idx, outer_idx) {
-    const { game: gameId } = this.props
-    console.log("game id " + gameId)
-    try {
-      const response = await makeMove(gameId, inner_idx, outer_idx)
-      return response
-    } catch (error) {
-      console.log("making move threw an error ", error)
-      return null
-    }
-  }
   handleClick = async (inner_idx, outer_idx) => {
-    const size = this.props.size
-    console.log(this.state.squares)
-    var outerSquares = this.state.squares.slice()
-    console.log(" os ", outerSquares)
-    var squares = this.state.squares[outer_idx].slice()
-    var localWinners = this.state.localWinners.slice()
+    const size = this.props.game.size
+    console.log("game at beginning of click ", this.props.game)
+    var outerSquares = this.props.game.squares.slice()
+    var squares = this.props.game.squares[outer_idx].slice()
+    console.log(" squares[inner_idx] ", squares[inner_idx])
+    var localWinners = this.props.game.localWinners.slice()
+    console.log("this.props.game.winner = " + this.props.game.winner)
     if (
-      this.state.winner ||
+      this.props.game.winner ||
       !this.isCurrentBoard(outer_idx) ||
       squares[inner_idx]
     ) {
@@ -86,14 +76,18 @@ class Game extends React.Component {
       outerCol: outer_idx % size
     }
     //lets send the request to the blockchain
-    const response = await this.makeMove(inner_idx, outer_idx)
+    const response = await this.props.makeMove(inner_idx, outer_idx)
     console.log("make move: ", response)
-    if (response == null) {
+    this.props.updateGame({ errorMessage: response })
+    // this.setState((prevState, props) => ({
+    //   errorMessage: response
+    // }))
+    if (response != null) {
       return
     }
     console.log("inner_idx " + inner_idx + " outer_idx " + outer_idx)
     console.log("lastMoveLocation: ", lastMoveLocation)
-    squares[inner_idx] = this.state.xIsNext ? "X" : "O"
+    squares[inner_idx] = this.props.game.xIsNext ? "X" : "O"
     outerSquares[outer_idx] = squares
     //inner index tells you the coordinates within a smaller game
     //outer index tells you the coordinates within the overall board
@@ -104,13 +98,16 @@ class Game extends React.Component {
       col: lastMoveLocation.outerCol
     })
     const winner = globalWinnerLine ? localWinners[globalWinnerLine[0]] : null
-    this.setState((prevState, props) => ({
+    console.log("game before ", this.props.game)
+    await this.props.updateGame({
       squares: outerSquares,
       localWinners: localWinners,
       lastMoveLocation: lastMoveLocation,
-      xIsNext: !this.state.xIsNext,
+      xIsNext: !this.props.game.xIsNext,
       winner: winner
-    }))
+    })
+    console.log("game after ", this.props.game)
+    // this.setState((prevState, props) => ({}))
   }
 
   calculateWinner(squares, lastMoveLocation) {
@@ -171,9 +168,9 @@ class Game extends React.Component {
     return (
       <Board
         key={i}
-        size={this.props.size}
-        squares={this.state.squares[i]}
-        winner={this.state.localWinners[i]}
+        size={this.props.game.size}
+        squares={this.props.game.squares[i]}
+        winner={this.props.game.localWinners[i]}
         clickable={this.isCurrentBoard(i)}
         onClick={p => this.handleClick(p, i)}
       />
@@ -182,34 +179,38 @@ class Game extends React.Component {
 
   render() {
     let status
-    if (this.state.winner) {
-      status = this.state.winner + " wins!"
+    if (this.props.game.winner) {
+      status = this.props.game.winner + " wins!"
       const lastOuterMove = {
-        row: this.state.lastMoveLocation.outerRow,
-        col: this.state.lastMoveLocation.outerCol
+        row: this.props.game.lastMoveLocation.outerRow,
+        col: this.props.game.lastMoveLocation.outerCol
       }
       if (
-        this.calculateWinner(this.state.localWinners, lastOuterMove) === null
+        this.calculateWinner(this.props.game.localWinners, lastOuterMove) ===
+        null
       ) {
         status = "Time over! " + status
       }
     } else {
-      if (this.state.localWinners.indexOf(null) === -1) {
+      if (this.props.game.localWinners.indexOf(null) === -1) {
         status = "Draw! Everybody wins!! :D"
       } else {
-        status = "Next player: " + (this.state.xIsNext ? "X" : "O")
+        status = "Next player: " + (this.props.game.xIsNext ? "X" : "O")
       }
     }
 
-    const timerXPaused = !this.state.xIsNext || Boolean(this.state.winner)
-    const timerOPaused = this.state.xIsNext || Boolean(this.state.winner)
-    const grid = generateGridNxN("game", this.props.size, this.renderBoard)
+    const timerXPaused =
+      !this.props.game.xIsNext || Boolean(this.props.game.winner)
+    const timerOPaused =
+      this.props.game.xIsNext || Boolean(this.props.game.winner)
+    const grid = generateGridNxN("game", this.props.game.size, this.renderBoard)
     return (
       <div className="game-container">
         {grid}
         {this.props.renderInfo && (
           <div className="game-info">
             <div>{status}</div>
+            <div>{this.props.game.errorMessage}</div>
             {/* {this.props.clock && (
               <div>
                 [TIME] X:{" "}
@@ -236,4 +237,12 @@ class Game extends React.Component {
     )
   }
 }
-export default Game
+const mapState = ({ game }) => ({ game })
+const mapDispatch = ({ game }) => ({
+  makeMove: game.makeMove,
+  updateGame: game.updateGame
+})
+export default connect(
+  mapState,
+  mapDispatch
+)(Game)

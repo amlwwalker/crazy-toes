@@ -1,10 +1,11 @@
 import React from "react"
+import { connect } from "react-redux"
 
 class SettingsForm extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      boardSize: this.props.defaultValues.boardSize,
+      boardSize: this.props.game.size,
       joinGame: false,
       game: this.props.game
     }
@@ -94,4 +95,12 @@ class SettingsForm extends React.Component {
   }
 }
 
-export default SettingsForm
+const mapState = ({ game }) => ({ game })
+const mapDispatch = ({ game }) => ({
+  makeMove: game.makeMove,
+  updateGame: game.update
+})
+export default connect(
+  mapState,
+  mapDispatch
+)(SettingsForm)

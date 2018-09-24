@@ -199,6 +199,7 @@ export const connectMetamask = async () => {
       .catch(error => {
         alert("Transaction cancelled " + error)
       })
+    return web3
   } catch (error) {
     console.error("Please install MetaMask to continue", error.message)
     alert("Please install MetaMask and try again")
@@ -239,9 +240,30 @@ export const makeMove = async (gameId, inner_idx, outer_idx) => {
   }
   const contractInstance = await new web3.eth.Contract(abi, contractAddress)
   const accounts = await web3.eth.getAccounts()
-  const result = await contractInstance.methods
+  let response = ""
+  await contractInstance.methods
     .makeMove(gameId, inner_idx, outer_idx)
     .send({ from: accounts[0] })
-  console.log("result ", result)
-  return result
+    .on("transactionHash", hash => {
+      console.log("TX Hash", hash)
+    })
+    .then(receipt => {
+      console.log("Mined", receipt)
+      if (receipt.status == "0x1" || receipt.status == 1) {
+        console.log("Transaction Success")
+        response = null
+      } else {
+        console.log("Transaction Failed")
+        response = "Transaction Failed"
+      }
+    })
+    .catch(err => {
+      const errorMessage = err.toString().split(":")
+      response = errorMessage[errorMessage.length - 1].replace("revert ", "")
+    })
+    .finally(() => {
+      console.log("Extra Code After Everything")
+    })
+  console.log("result " + response)
+  return response
 }

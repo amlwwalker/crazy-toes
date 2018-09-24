@@ -1,6 +1,7 @@
 import React, { Component } from "react"
+import { Provider } from "react-redux"
 import Interface from "../components/interface.js"
-
+import store from "../models/store"
 class App extends Component {
   constructor(props) {
     super(props)
@@ -10,7 +11,11 @@ class App extends Component {
   }
 
   render() {
-    return <Interface />
+    return (
+      <Provider store={store}>
+        <Interface />
+      </Provider>
+    )
   }
 }
 

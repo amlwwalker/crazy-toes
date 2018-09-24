@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@rematch/core": "^0.6.0",
     "bn-chai": "^1.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-datetime": "^1.5.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
+    "react-redux": "^5.0.7",
     "react-scripts": "1.1.5",
     "react-web3-provider": "^1.1.1",
+    "redux-logger": "^3.0.6",
     "web3": "^1.0.0-beta.36"
   },
   "scripts": {
