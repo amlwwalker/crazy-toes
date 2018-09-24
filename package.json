@@ -1,0 +1,23 @@
+{
+  "name": "tic-tac-toe",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bn-chai": "^1.0.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-datetime": "^1.5.0",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "react-scripts": "1.1.5",
+    "react-web3-provider": "^1.1.1",
+    "web3": "^1.0.0-beta.36"
+  },
+  "scripts": {
+    "dev": "PORT=3000 REACT_APP_ENV=dev REACT_APP_VERSION=hot-dev react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
