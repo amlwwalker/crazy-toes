@@ -23,7 +23,7 @@ export default class Interface extends React.Component {
     try {
       console.log("attempting to join game " + gameId)
       //change to newGame eventually
-      await joinGame(gameId)
+      // await joinGame(gameId)
     } catch (error) {
       console.log("joining game threw an error ", error)
     }
@@ -39,7 +39,7 @@ export default class Interface extends React.Component {
       // }))
       //change to newGame eventually
       const rate = 1000
-      await newGame(rate)
+      // await newGame(rate)
     } catch (error) {
       console.log("new game threw an error ", error)
     }

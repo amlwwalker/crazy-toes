@@ -86,11 +86,12 @@ class Game extends React.Component {
       outerCol: outer_idx % size
     }
     //lets send the request to the blockchain
-    const response = await this.makeMove(inner_idx, outer_idx)
-    console.log("make move: ", response)
-    if (response == null) {
-      return
-    }
+    //TODO: This is off just for frontend dev
+    // const response = await this.makeMove(inner_idx, outer_idx)
+    // console.log("make move: ", response)
+    // if (response == null) {
+    //   return
+    // }
     console.log("inner_idx " + inner_idx + " outer_idx " + outer_idx)
     console.log("lastMoveLocation: ", lastMoveLocation)
     squares[inner_idx] = this.state.xIsNext ? "X" : "O"
